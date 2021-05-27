@@ -1,40 +1,82 @@
-// Native
-const { join } = require('path')
-const { format } = require('url')
+const { join } = require('path');
+const { format } = require('url');
 
-// Packages
-const { BrowserWindow, app, ipcMain } = require('electron')
-const isDev = require('electron-is-dev')
-const prepareNext = require('electron-next')
+const { BrowserWindow, app, Menu, dialog } = require('electron');
+const isDev = require('electron-is-dev');
+const prepareNext = require('electron-next');
+const { isEmpty, head } = require('lodash');
 
-// Prepare the renderer once the app is ready
-app.on('ready', async () => {
-  await prepareNext('./renderer')
+const { initializeIpcEvents } = require('./ipc');
 
-  const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+const createWindow = () =>
+  new BrowserWindow({
+    width: 1200,
+    height: 760,
     webPreferences: {
       nodeIntegration: false,
       preload: join(__dirname, 'preload.js'),
     },
-  })
+  });
 
+const openWindow = (win, baseDir) => {
+  const dir = encodeURIComponent(baseDir);
   const url = isDev
-    ? 'http://localhost:8000'
+    ? `http://localhost:8000?baseDir=${dir}`
     : format({
         pathname: join(__dirname, '../renderer/out/index.html'),
         protocol: 'file:',
         slashes: true,
-      })
+      });
+  win.loadURL(url);
+};
 
-  mainWindow.loadURL(url)
-})
+const createTemplate = (win) =>
+  Menu.buildFromTemplate([
+    {
+      label: app.name,
+      submenu: [{ role: 'quit' }],
+    },
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Open',
+          accelerator: 'Command+O',
+          click: () => {
+            dialog
+              .showOpenDialog({ properties: ['openDirectory'] })
+              .then((res) => {
+                const { filePaths } = res;
+                if (!isEmpty(filePaths)) {
+                  win.webContents.send('navigate', head(filePaths));
+                }
+              });
+          },
+        },
+      ],
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload', accelerator: 'Command+R' },
+        { role: 'toggleDevTools', accelerator: 'F12' },
+        { role: 'togglefullscreen' },
+      ],
+    },
+  ]);
 
-// Quit the app once all windows are closed
-app.on('window-all-closed', app.quit)
+app.on('ready', async () => {
+  await prepareNext('./renderer');
 
-// listen the channel `message` and resend the received message to the renderer process
-ipcMain.on('message', (event, message) => {
-  event.sender.send('message', message)
-})
+  const win = createWindow();
+
+  Menu.setApplicationMenu(createTemplate(win));
+
+  initializeIpcEvents(win);
+
+  openWindow(win, '');
+});
+
+// app.whenReady().then(() => {});
+
+app.on('window-all-closed', app.quit);

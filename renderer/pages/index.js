@@ -1,46 +1,47 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { isEmpty } from 'lodash';
+
+import Table from '../components/Table/container';
+import Initialize from '../components/Initialize';
 
 const Home = () => {
-  const [input, setInput] = useState('')
-  const [message, setMessage] = useState(null)
+  const [dir, setDir] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { baseDir } = router.query;
+  const handleSetDir = (e, dir) => {
+    setIsLoading(false);
+    setDir(dir);
+  };
+  const handleNavigate = (e, baseDir) =>
+    router.replace({ pathname: '/', query: { baseDir } });
 
   useEffect(() => {
-    const handleMessage = (event, message) => setMessage(message)
-    window.electron.message.on(handleMessage)
-
+    window.api.on('navigate', handleNavigate);
     return () => {
-      window.electron.message.off(handleMessage)
-    }
-  }, [])
+      window.api.off('navigate', handleNavigate);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseDir]);
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    window.electron.message.send(input)
-    setMessage(null)
+  useEffect(() => {
+    if (baseDir && isEmpty(dir)) {
+      setIsLoading(true);
+      window.api.on('async-dir', handleSetDir);
+      window.api.getDir({ baseDir });
+    }
+    return () => {
+      window.api.off('async-dir', handleSetDir);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseDir]);
+
+  if (isEmpty(dir)) {
+    return <Initialize isLoading={isLoading} />;
   }
 
-  return (
-    <div>
-      <h1>Hello Electron!</h1>
+  return <Table dir={dir} />;
+};
 
-      {message && <p>{message}</p>}
-
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
-      </form>
-
-      <style jsx>{`
-        h1 {
-          color: red;
-          font-size: 50px;
-        }
-      `}</style>
-    </div>
-  )
-}
-
-export default Home
+export default Home;

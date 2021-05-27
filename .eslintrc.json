@@ -1,0 +1,38 @@
+{
+  "plugins": ["react", "react-hooks"],
+  "parser": "babel-eslint",
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "prettier"
+  ],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module",
+    "ecmaFeatures": { "jsx": true }
+  },
+  "env": {
+    "es2021": true,
+    "jest": true,
+    "browser": true,
+    "node": true
+  },
+  "rules": {
+    "import/no-extraneous-dependencies": 0,
+    "react/destructuring-assignment": 0,
+    "react/display-name": 0,
+    "react/prop-types": 0,
+    "no-unused-vars": "warn",
+    "no-console": "warn",
+    "react-hooks/rules-of-hooks": "warn",
+    "react-hooks/exhaustive-deps": "warn",
+    "react/jsx-uses-react": 0,
+    "react/react-in-jsx-scope": 0
+  }
+}

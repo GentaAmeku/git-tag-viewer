@@ -1,4 +1,4 @@
-const { devDependencies } = require('../package.json')
+const { devDependencies } = require('../package.json');
 
 module.exports = {
   presets: [
@@ -12,5 +12,9 @@ module.exports = {
         },
       },
     ],
+    '@emotion/babel-preset-css-prop',
   ],
-}
+  plugins: [
+    ['@babel/plugin-proposal-pipeline-operator', { proposal: 'minimal' }],
+  ],
+};
