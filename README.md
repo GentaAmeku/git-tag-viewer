@@ -4,6 +4,8 @@ An application to check if a Git tag is the latest commit
 
 Git タグが最新のコミットか確認するためのアプリケーション
 
+Electron + Next.js
+
 ## Requirement
 
 Requires at least Node.js 14.15.4
