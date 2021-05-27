@@ -1,8 +1,8 @@
 # Git Tag Viewer
 
-An application to check if a Git tag is the latest commit
+An application to check if a Git tag is the latest commit in multiple directories
 
-Git タグが最新のコミットか確認するためのアプリケーション
+複数のディレクトリで Git タグが最新のコミットか確認するためのアプリケーション
 
 Electron + Next.js
 
